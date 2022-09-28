@@ -1,45 +1,58 @@
+/** *******************************************************************************
+*  WEB322 – Assignment 02
+*  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.
+*  No part of this assignment has been copied manually or electronically from any other source
+*  (including 3rd party web sites) or distributed to other students.
+*
+*  Name: Christian Park   Student ID: 036917128  Date: Sept. 29, 2022
+*
+*  Online (Cyclic) Link:
+*
+********************************************************************************/
+
 const express = require('express');
 const app = express();
-dataService = require('./data-service.js');
-
-app.use(express.static('public'));
+const data = require('./data-service.js');
 
 const HTTP_PORT = process.env.PORT || 8080;
+app.use(express.static('public'));
 
-// call this function after the http server starts listening for requests
-function onHttpStart() {
-  console.log('Express http server listening on port ' + HTTP_PORT);
-}
+data.initialize().then(function() {
+  app.listen(HTTP_PORT, function() {
+    console.log('Express http server listening on port ' + HTTP_PORT);
+  });
+}).catch(function(err) {
+  console.log('Unable to start server: ' + err);
+});
 
 // setup a 'route' to listen on the default url path (http://localhost)
 app.get('/', function(req, res) {
-  res.sendfile('views/home.html');
+  res.sendFile('./views/home.html', {root: __dirname});
 });
 
 // setup another route to listen on /about
 app.get('/about', function(req, res) {
-  res.sendfile('views/about.html');
+  res.sendFile('./views/about.html', {root: __dirname});
 });
 
 app.get('/students', function(req, res) {
-  res.setHeader('Content-Type', 'application/jason');
-  // res.json(students.json);
-  // res.end(JSON.stringify());
-  res.send('TODO: Get all students');
+  data.getAllStudents().then((data) => {
+    res.json(data);
+  });
 });
 
 app.get('/intlstudents', function(req, res) {
-  res.send('TODO: Get all students who have isInternationalStudent == true');
+  data.getInternationalStudents().then((data) => {
+    res.json(data);
+  });
 });
 
 app.get('/programs', function(req, res) {
-  res.send('TODO: Get all programs');
+  data.getPrograms().then((data) => {
+    res.json(data);
+  });
 });
 
 app.get('*', function(req, res) {
   res.send('Error Code: 404', 404);
 });
-// setup http server to listen on HTTP_PORT
-app.listen(HTTP_PORT, onHttpStart);
-
-
