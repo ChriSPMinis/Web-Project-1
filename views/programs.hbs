@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col-md-12">
+          <h2>Programs</h2>
+          <hr />
+
+        {{#if programs}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Program Code</th>
+                    <th>Program Name</th>
+                </tr>
+            </thead>
+        {{#each programs}}
+        <tbody>
+            <td><a href='/students?program={{this.programCode}}'>{{this.programCode}}</a></td>
+            <td><a href='/students?program={{this.programCode}}'>{{this.programName}}</a></td>
+        </tbody>
+        {{/each}}
+        {{/if}}
+        {{#unless programs}}
+            <div class="col-md-12 text-center">
+                <p><strong>{{message}}</strong></p>
+            </div>
+        {{/unless}}
+        </table>
+    </div>
+</div>
