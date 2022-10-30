@@ -83,7 +83,7 @@ module.exports.getStudentsByProgramCode = function(num) {
       }
     }
     if (program.length == 0) {
-      reject(new Error('No results found (By: Status)')); return;
+      reject(new Error('No results found (By: Code)')); return;
     }
     resolve(program);
   });
@@ -97,23 +97,23 @@ module.exports.getStudentsByCredentials = function(num) {
       }
     }
     if (creds.length == 0) {
-      reject(new Error('No results found (By: Status)')); return;
+      reject(new Error('No results found (By: Creds)')); return;
     }
     resolve(creds);
   });
 };
 module.exports.getStudentsByID = function(num) {
-  const sid = [];
+  let check = false;
   return new Promise((resolve, reject) => {
     for (let i = 0; i < students.length; i++) {
       if (students[i].studentID == num) {
-        sid.push(students[i]);
+        check = true;
+        resolve(students[i]);
       }
     }
-    if (sid.length == 0) {
-      reject(new Error('No results found (By: Status)')); return;
+    if (check === false) {
+      reject(new Error('No results found (By: Student ID)')); return;
     }
-    resolve(sid);
   });
 };
 module.exports.getInternationalStudents = function() {
@@ -135,10 +135,40 @@ module.exports.getInternationalStudents = function() {
 module.exports.getPrograms = function() {
   return new Promise((resolve, reject) => {
     if (programs.length == 0) {
-      reject(new Error('no results returned')); return;
+      reject(new Error('No programs found')); return;
     }
     resolve(programs);
   });
 };
 
-
+// Update Student
+module.exports.updateStudent = function(studentData) {
+  return new Promise((resolve, reject) =>{
+    let check = false;
+    const updater = {
+      studentID: studentData.studentID,
+      firstName: studentData.firstName,
+      lastName: studentData.lastName,
+      email: studentData.email,
+      phone: studentData.phone,
+      addressStreet: studentData.addressStreet,
+      addressCity: studentData.addressCity,
+      addressState: studentData.addressState,
+      addressPostal: studentData.addressPostal,
+      status: studentData.status,
+      program: studentData.program,
+      isInternationalStudent: studentData.isInternationalStudent,
+      expectedCredential: studentData.expectedCredential,
+      registrationDate: studentData.registrationDate};
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].studentID === studentData.studentID) {
+        students[i] = updater;
+        check = true;
+        resolve();
+      }
+    }
+    if (check === false) {
+      reject(new Error('Unable to update'));
+    }
+  });
+};
