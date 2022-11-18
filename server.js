@@ -1,12 +1,12 @@
 /** *******************************************************************************
-*  WEB322 – Assignment 04
+*  WEB322 – Assignment 05
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.
 *  No part of this assignment has been copied manually or electronically from any other source
 *  (including 3rd party web sites) or distributed to other students.
 *
 *  Name: Christian Park   Student ID: 036917128  Date: Oct. 30, 2022
 *
-*  Online (Cyclic) Link: https://alive-overshirt-frog.cyclic.app/about
+*  Online (Cyclic) Link: https://alive-overshirt-frog.cyclic.app
 *
 ********************************************************************************/
 
@@ -108,14 +108,20 @@ app.get('/students', function(req, res) {
     });
   } else {
     data.getAllStudents().then((data) => {
-      res.render('students', {students: data});
+      if (data.length > 0) {
+        res.render('students', {students: data});
+      } else {
+        res.render('students', {message: 'no results'});
+      }
     });
   }
 });
 
 // Add Student
 app.get('/students/add', function(req, res) {
-  res.render('addStudent');
+  data.getPrograms().then((data)=>{
+    res.render('addStudent', {programs: data});
+  });
 });
 app.post('/students/add', function(req, res) {
   data.addStudent(req.body).then(()=>{
@@ -124,12 +130,36 @@ app.post('/students/add', function(req, res) {
 });
 
 app.get('/student/:studentID', function(req, res) {
-  data.getStudentsByID(req.params.studentID).then((data)=>{
-    res.render('student', {student: data});
-  }).catch(function(err) {
-    res.render('student', {message: 'No results'});
-  });
+  const viewData = {};
+  data.getStudentByID(req.params.studentID).then((data) => {
+    if (data) {
+      viewData.student = data;
+    } else {
+      viewData.student = null;
+    }
+  }).catch(() => {
+    viewData.student = null;
+  }).then(data.getPrograms)
+      .then((data) => {
+        viewData.programs = data;
+        for (let i = 0; i < viewData.programs.length; i++) {
+          if (viewData.programs[i].programCode == viewData.student[0].program) {
+            viewData.programs[i].selected = true;
+          }
+        }
+      }).catch(() => {
+        viewData.programs = [];
+      }).then(() => {
+        if (viewData.student == null) {
+          res.status(404).send('Student Not Found');
+        } else {
+          res.render('student', {viewData: viewData});
+        }
+      }).catch((err)=>{
+        res.status(500).send('Unable to Show Students');
+      });
 });
+
 
 // Add Image
 app.get('/images/add', function(req, res) {
@@ -146,17 +176,64 @@ app.get('/images', function(req, res) {
   });
 });
 
-// International Students
-app.get('/intlstudents', function(req, res) {
-  data.getInternationalStudents().then((data) => {
-    res.render('students', {students: data});
+// Update Student
+app.post('/student/update', (req, res) => {
+  data.updateStudent(req.body).then(()=>{
+    res.redirect('/students');
+  }).catch((err)=>{
+    res.status(500).send('Unable to Update Student');
+  });
+});
+// Delete Student
+app.get('/students/delete/:studentID', function(req, res) {
+  data.deleteStudentByID(req.params.studentID).then((data)=>{
+    res.redirect('/students');
+  }).catch(function(err) {
+    res.status(500).send('Unable to Remove Student / Student not found');
   });
 });
 
 // Programs
 app.get('/programs', function(req, res) {
   data.getPrograms().then((data) => {
-    res.render('programs', {programs: data});
+    if (data.length > 0) {
+      res.render('programs', {programs: data});
+    } else {
+      res.render('programs', {message: 'no results'});
+    }
+  });
+});
+// Add Program
+app.get('/programs/add', function(req, res) {
+  res.render('addProgram');
+});
+app.post('/programs/add', function(req, res) {
+  data.addProgram(req.body).then(()=>{
+    res.redirect('/programs');
+  });
+});
+// Update Program
+app.post('/program/update', (req, res) => {
+  data.updateProgram(req.body).then(()=>{
+    res.redirect('/programs');
+  }).catch((err)=>{
+    res.status(500).send('Unable to Update Program');
+  });
+});
+// Program by code
+app.get('/program/:programCode', function(req, res) {
+  data.getProgramByCode(req.params.programCode).then((data)=>{
+    res.render('program', {program: data});
+  }).catch(function(err) {
+    res.status(404).send('Program Not Found');
+  });
+});
+// Delete program by code
+app.get('/programs/delete/:programCode', function(req, res) {
+  data.deleteProgramByCode(req.params.programCode).then((data)=>{
+    res.redirect('/programs');
+  }).catch(function(err) {
+    res.status(500).send('Program Not Found');
   });
 });
 
@@ -165,9 +242,3 @@ app.get('*', function(req, res) {
   res.send('Error Code: 404', 404);
 });
 
-// Update Student
-app.post('/student/update', (req, res) => {
-  data.updateStudent(req.body).then(()=>{
-    res.redirect('/students');
-  });
-});
