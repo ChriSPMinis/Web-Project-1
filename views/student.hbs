@@ -1,6 +1,7 @@
 <div class="row">
     <div class="col-md-12">
-        <h2>{{student.firstName}} {{student.lastName}} - Student: {{student.studentID}}</h2>
+        <h2>{{viewData.student.0.firstName}} {{viewData.student.0.lastName}} - Student: {{viewData.student.0.studentID}}</h2>
+        
         <hr>
         <form method="post" action="/student/update">
             <fieldset>
@@ -9,7 +10,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="studentID">Student ID:</label>
-                            <input class="form-control" id="studentID" name="studentID" type="text" value="{{student.studentID}}" readonly>
+                            <input class="form-control" id="studentID" name="studentID" type="text" value="{{viewData.student.0.studentID}}" readonly>
                         </div>
                     </div>
                 </div>
@@ -18,13 +19,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="firstName">First Name:</label>
-                            <input class="form-control" id="firstName" name="firstName" type="text" value="{{student.firstName}}">
+                            <input class="form-control" id="firstName" name="firstName" type="text" value="{{viewData.student.0.firstName}}">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="lastName">Last Name:</label>
-                            <input class="form-control" id="lastName" name="lastName" type="text" value="{{student.lastName}}">
+                            <input class="form-control" id="lastName" name="lastName" type="text" value="{{viewData.student.0.lastName}}">
                         </div>
                     </div>  
                 </div>
@@ -33,13 +34,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="email">Email:</label>
-                            <input class="form-control" id="email" name="email" type="email" value="{{student.email}}">
+                            <input class="form-control" id="email" name="email" type="email" value="{{viewData.student.0.email}}">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="phone">Phone:</label>
-                            <input class="form-control" id="phone" name="phone" type="tel" value="{{student.phone}}">
+                            <input class="form-control" id="phone" name="phone" type="tel" value="{{viewData.student.0.phone}}">
                         </div>
                     </div>
                 </div>
@@ -48,25 +49,25 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="addressStreet">Address(Street):</label>
-                            <input class="form-control" id="addressStreet" name="addressStreet" type="text" value="{{student.addressStreet}}">
+                            <input class="form-control" id="addressStreet" name="addressStreet" type="text" value="{{viewData.student.0.addressStreet}}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="addressCity">Address(City):</label>
-                            <input class="form-control" id="addressCity" name="addressCity" type="text" value="{{student.addressCity}}">
+                            <input class="form-control" id="addressCity" name="addressCity" type="text" value="{{viewData.student.0.addressCity}}">
                         </div>
                     </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="addressState">Address(State):</label>
-                        <input class="form-control" id="addressState" name="addressState" type="text" value="{{student.addressState}}">
+                        <input class="form-control" id="addressState" name="addressState" type="text" value="{{viewData.student.0.addressState}}">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="addressPostal">Address(Zip Code):</label>
-                        <input class="form-control" id="addressPostal" name="addressPostal" type="text" value="{{student.addressPostal}}">
+                        <input class="form-control" id="addressPostal" name="addressPostal" type="text" value="{{viewData.student.0.addressPostal}}">
                     </div>
                 </div>
 
@@ -77,41 +78,39 @@
                         <br>
                             <label class="checkbox-inline">
                                 Full Time
-                                <input type="radio" id="statusFT" name="status" {{#equal student.status "Full Time" }}checked{{/equal}} value="Full Time">                    
+                                <input type="radio" id="statusFT" name="status" {{#equal viewData.student.0.status "Full Time" }}checked{{/equal}} value="Full Time">                    
                             </label>
                             <label class="checkbox-inline">
                                 Part Time
-                                <input type="radio" id="statusFT" name="status" {{#equal student.status "Part Time" }}checked{{/equal}}value="Full Time">
+                                <input type="radio" id="statusFT" name="status" {{#equal viewData.student.0.status "Part Time" }}checked{{/equal}} value="Part Time">
                             </label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="program">Program:</label>
-                        <select class="form-control" name="program" id="program">
-                            <option value="ACF" {{#equal student.program "ACF"}}selected{{/equal}}>ACF - Accounting and Finance</option>
-                            <option value="AVO" {{#equal student.program "AVO"}}selected{{/equal}}>AVO - Aviation Operations</option>
-                            <option value="DAN" {{#equal student.program "DAN"}}selected{{/equal}}>DAN - 3D Animation</option>
-                            <option value="CPP" {{#equal student.program "CPP"}}selected{{/equal}}>CPP - Computer Programming</option>
-                            <option value="CPA" {{#equal student.program "CPA"}}selected{{/equal}}>CPA - Computer Programming and Analysis</option>
-                            <option value="CTY" {{#equal student.program "CTY"}}selected{{/equal}}>CTY - Computer Systems Technology</option>
-                            <option value="CSN" {{#equal student.program "CSN"}}selected{{/equal}}>CSN - Computer Systems Technician</option>
-                            <option value="BSD" {{#equal student.program "BSD"}}selected{{/equal}}>BSD - Software Development (Honours Bachelor of Technology)</option>
-                            <option value="IFS" {{#equal student.program "IFS"}}selected{{/equal}}>IFS - Informatics and Security (Honours Bachelor of Technology)</option>
-                            <option value="DAS" {{#equal student.program "DAS"}}selected{{/equal}}>DAS - Data Science and Analytics program (Honours Bachelor of Technology)</option>
-                        </select>                   
+                        {{#if viewData.programs}}
+                            <select class="form-control" name="program" id="program">
+                            <option value="">Select Program</option>
+                        {{#each viewData.programs}}
+                            <option value="{{programCode}}" {{#if selected}} selected {{/if}} > {{programCode}} - {{programName}} </option>
+                        {{/each}}
+                            </select>
+                        {{else}}
+                            <div>No Programs</div>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="isInternationalStudent">International Student?</label>
-                        <input class="form-control" type="checkbox" name="isInternationalStudent" {{#if student.isInternationalStudent}}checked{{/if}}>
+                        <input class="form-control" type="checkbox" id="isInternationalStudent" name="isInternationalStudent" {{#if viewData.student.0.isInternationalStudent}}checked=""{{/if}}>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="expectedCredential">Expected Credential:</label>
-                        <input class="form-control" id="expectedCredential" name="expectedCredential" type="text" value="{{student.expectedCredential}}">
+                        <input class="form-control" id="expectedCredential" name="expectedCredential" type="text" value="{{viewData.student.0.expectedCredential}}">
                     </div>
                 </div>
             </div>
@@ -120,7 +119,7 @@
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="registrationDate">Registration Date:</label>
-                        <input class="form-control" id="registrationDate" name="registrationDate" type="text" value="{{student.registrationDate}}" readonly>
+                        <input class="form-control" id="registrationDate" name="registrationDate" type="text" value="{{viewData.student.0.registrationDate}}" readonly>
                     </div>
                 </div>
             </div>

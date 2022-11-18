@@ -1,0 +1,31 @@
+    <div class="container">
+      <div class="row">
+        <h2>{{program.0.programName}} - Program Code: {{program.0.programCode}}</h2>
+        <br>
+        <form method="post" action="/program/update">
+            <fieldset>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                         <label for="program">Program Code:</label>
+                         <input class="form-control" id="programCode" name="programCode" type="text" value="{{program.0.programCode}}" readonly>
+                     </div>
+                </div>
+                  <div class="col-md-12">
+                     <div class="form-group">
+                          <label for="programName">Program Name:</label>
+                          <input class="form-control" id="programName" name="programName" type="text" value="{{program.0.programName}}">
+                       </div>
+                    </div>          
+            </fieldset>
+                <input type="submit" class="btn btn-primary pullright" value="Update Program">
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Latest compiled and minified jQuery 3.2.1 JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="crossorigin="anonymous"></script>
+
+    <!-- Latest compiled and minified Bootstrap 3.3.7 JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
