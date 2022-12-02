@@ -1,5 +1,5 @@
 /** *******************************************************************************
-*  WEB322 – Assignment 05
+*  WEB322 – Assignment 06
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.
 *  No part of this assignment has been copied manually or electronically from any other source
 *  (including 3rd party web sites) or distributed to other students.
@@ -14,12 +14,15 @@ const express = require('express');
 const multer = require('multer');
 const exphbs = require('express-handlebars');
 const fs = require('fs');
+const clientSessions = require('client-sessions');
 
 const app = express();
 const data = require('./data-service.js');
+const dataServiceAuth = require('./data-service-auth.js');
 const path = require('path');
 
 const HTTP_PORT = process.env.PORT || 8080;
+app.use(express.urlencoded({extended: false}));
 app.use(express.static('public'));
 
 app.engine('.hbs', exphbs.engine({
@@ -53,6 +56,74 @@ const storage = multer.diskStorage({
 });
 const upload = multer({storage: storage});
 
+// Middleware Client Session
+app.use(clientSessions({
+  cookieName: 'session',
+  secret: 'web322_assignment6_secret_string',
+  duration: 2 * 60 * 1000, // 2 Minutes
+  activeDuration: 1000 * 60, // 1 Minute
+}));
+
+app.use(function(req, res, next) {
+  res.locals.session = req.session;
+  next();
+});
+
+app.use(function(req, res, next) {
+  const route = req.baseUrl + req.path;
+  app.locals.activeRoute = (route == '/') ? '/' : route.replace(/\/$/, '');
+  next();
+});
+
+function ensureLogin(req, res, next) {
+  if (!req.session.user) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+}
+
+// Register
+app.get('/register', function(req, res) {
+  res.render('register');
+});
+app.post('/register', function(req, res) {
+  dataServiceAuth.registerUser(req.body)
+      .then(() => res.render('register', {successMessage: 'User created'}))
+      // eslint-disable-next-line max-len
+      .catch((err) => res.render('register', {errorMessage: err, userName: req.body.userName}));
+});
+
+// Login
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+app.post('/login', function(req, res) {
+  req.body.userAgent = req.get('User-Agent');
+  dataServiceAuth.checkUser(req.body)
+      .then((user) => {
+        req.session.user = {
+          userName: user.userName, // Auth users UN
+          email: user.email, // Auth users email
+          loginHistory: user.loginHistory, // Auth users history
+        };
+        res.redirect('/students');
+      })
+      .catch(function(err) {
+        res.render('login', {errorMessage: err, userName: req.body.userName});
+      });
+});
+// Logout
+app.get('/logout', function(req, res) {
+  req.session.reset();
+  res.render('login');
+});
+
+// History
+app.get('/userHistory', ensureLogin, function(req, res) {
+  res.render('userHistory');
+});
+
 // Active Route
 app.use(function(req, res, next) {
   const route = req.baseUrl + req.path;
@@ -61,14 +132,15 @@ app.use(function(req, res, next) {
 });
 
 // Initial
-app.use(express.urlencoded({extended: true}));
-data.initialize().then(function() {
-  app.listen(HTTP_PORT, function() {
-    console.log('Express http server listening on port ' + HTTP_PORT);
-  });
-}).catch(function(err) {
-  console.log('Unable to start server: ' + err);
-});
+data.initialize()
+    .then(dataServiceAuth.initialize)
+    .then(function() {
+      app.listen(HTTP_PORT, function() {
+        console.log('Express http server listening on port ' + HTTP_PORT);
+      });
+    }).catch(function(err) {
+      console.log('Unable to start server: ' + err);
+    });
 
 // Home
 app.get('/', function(req, res) {
@@ -81,7 +153,7 @@ app.get('/about', function(req, res) {
 });
 
 // Students
-app.get('/students', function(req, res) {
+app.get('/students', ensureLogin, function(req, res) {
   if (req.query.status) {
     data.getStudentsByStatus(req.query.status).then((data)=>{
       if (data.length > 0) {
@@ -118,18 +190,18 @@ app.get('/students', function(req, res) {
 });
 
 // Add Student
-app.get('/students/add', function(req, res) {
+app.get('/students/add', ensureLogin, function(req, res) {
   data.getPrograms().then((data)=>{
     res.render('addStudent', {programs: data});
   });
 });
-app.post('/students/add', function(req, res) {
+app.post('/students/add', ensureLogin, function(req, res) {
   data.addStudent(req.body).then(()=>{
     res.redirect('/students');
   });
 });
 
-app.get('/student/:studentID', function(req, res) {
+app.get('/student/:studentID', ensureLogin, function(req, res) {
   const viewData = {};
   data.getStudentByID(req.params.studentID).then((data) => {
     if (data) {
@@ -162,22 +234,22 @@ app.get('/student/:studentID', function(req, res) {
 
 
 // Add Image
-app.get('/images/add', function(req, res) {
+app.get('/images/add', ensureLogin, function(req, res) {
   res.render('addImage');
 });
-app.post('/images/add', upload.single('imageFile'), (req, res) => {
+app.post('/images/add', ensureLogin, upload.single('imageFile'), (req, res) => {
   res.redirect('/images');
 });
 
 // Images
-app.get('/images', function(req, res) {
+app.get('/images', ensureLogin, function(req, res) {
   fs.readdir('./public/images/uploaded', function(err, items) {
     res.render('images', {images: items});
   });
 });
 
 // Update Student
-app.post('/student/update', (req, res) => {
+app.post('/student/update', ensureLogin, (req, res) => {
   data.updateStudent(req.body).then(()=>{
     res.redirect('/students');
   }).catch((err)=>{
@@ -185,7 +257,7 @@ app.post('/student/update', (req, res) => {
   });
 });
 // Delete Student
-app.get('/students/delete/:studentID', function(req, res) {
+app.get('/students/delete/:studentID', ensureLogin, function(req, res) {
   data.deleteStudentByID(req.params.studentID).then((data)=>{
     res.redirect('/students');
   }).catch(function(err) {
@@ -194,7 +266,7 @@ app.get('/students/delete/:studentID', function(req, res) {
 });
 
 // Programs
-app.get('/programs', function(req, res) {
+app.get('/programs', ensureLogin, function(req, res) {
   data.getPrograms().then((data) => {
     if (data.length > 0) {
       res.render('programs', {programs: data});
@@ -204,16 +276,16 @@ app.get('/programs', function(req, res) {
   });
 });
 // Add Program
-app.get('/programs/add', function(req, res) {
+app.get('/programs/add', ensureLogin, function(req, res) {
   res.render('addProgram');
 });
-app.post('/programs/add', function(req, res) {
+app.post('/programs/add', ensureLogin, function(req, res) {
   data.addProgram(req.body).then(()=>{
     res.redirect('/programs');
   });
 });
 // Update Program
-app.post('/program/update', (req, res) => {
+app.post('/program/update', ensureLogin, (req, res) => {
   data.updateProgram(req.body).then(()=>{
     res.redirect('/programs');
   }).catch((err)=>{
@@ -221,7 +293,7 @@ app.post('/program/update', (req, res) => {
   });
 });
 // Program by code
-app.get('/program/:programCode', function(req, res) {
+app.get('/program/:programCode', ensureLogin, function(req, res) {
   data.getProgramByCode(req.params.programCode).then((data)=>{
     res.render('program', {program: data});
   }).catch(function(err) {
@@ -229,7 +301,7 @@ app.get('/program/:programCode', function(req, res) {
   });
 });
 // Delete program by code
-app.get('/programs/delete/:programCode', function(req, res) {
+app.get('/programs/delete/:programCode', ensureLogin, function(req, res) {
   data.deleteProgramByCode(req.params.programCode).then((data)=>{
     res.redirect('/programs');
   }).catch(function(err) {
